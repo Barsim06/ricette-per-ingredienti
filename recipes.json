@@ -1,0 +1,23 @@
+[
+    {
+        "nome": "Pasta al tonno",
+        "ingredienti": ["pasta", "tonno", "cipolla", "olio"],
+        "tempo": "15 min",
+        "difficoltà": "Facile",
+        "immagine": "https://picsum.photos/id/1080/400/300"
+    },
+    {
+        "nome": "Frittata di patate",
+        "ingredienti": ["uova", "patate", "cipolla", "olio"],
+        "tempo": "20 min",
+        "difficoltà": "Facile",
+        "immagine": "https://picsum.photos/id/292/400/300"
+    },
+    {
+        "nome": "Insalata mista",
+        "ingredienti": ["insalata", "pomodoro", "olio", "sale"],
+        "tempo": "10 min",
+        "difficoltà": "Facile",
+        "immagine": "https://picsum.photos/id/1081/400/300"
+    }
+]
