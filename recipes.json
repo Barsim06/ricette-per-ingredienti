@@ -4,20 +4,21 @@
         "ingredienti": ["pasta", "tonno", "cipolla", "olio"],
         "tempo": "15 min",
         "difficoltà": "Facile",
-        "immagine": "https://picsum.photos/id/1080/400/300"
+        "immagine": "https://images.unsplash.com/photo-1601050690547-2ef0d90f141f?auto=format&fit=crop&w=400&q=80"
     },
     {
         "nome": "Frittata di patate",
         "ingredienti": ["uova", "patate", "cipolla", "olio"],
         "tempo": "20 min",
         "difficoltà": "Facile",
-        "immagine": "https://picsum.photos/id/292/400/300"
+        "immagine": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=400&q=80"
     },
     {
         "nome": "Insalata mista",
         "ingredienti": ["insalata", "pomodoro", "olio", "sale"],
         "tempo": "10 min",
         "difficoltà": "Facile",
-        "immagine": "https://picsum.photos/id/1081/400/300"
+        "immagine": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=400&q=80"
     }
 ]
+
