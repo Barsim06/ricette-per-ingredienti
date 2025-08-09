@@ -1,61 +1,72 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I miei Preferiti</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #fff8f0; }
-        header { background-color: #ff7043; color: white; padding: 2rem 0; }
-        .card img { height: 180px; object-fit: cover; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>I miei Preferiti</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    background-color: #fff8f0;
+  }
+  header {
+    background-color: #ff7043;
+    color: white;
+    padding: 2rem 0;
+    text-align: center;
+  }
+  .card img {
+    height: 180px;
+    object-fit: cover;
+  }
+</style>
 </head>
 <body>
-    <header class="text-center">
-        <h1>⭐ Le mie ricette preferite</h1>
-        <a href="index.html" class="btn btn-light mt-2">⬅ Torna alla Home</a>
-    </header>
+<header>
+  <h1>⭐ Le mie ricette preferite</h1>
+  <a href="index.html" class="btn btn-light mt-2">⬅ Torna alla Home</a>
+</header>
+<main class="container my-4">
+  <div class="row" id="listaPreferiti"></div>
+</main>
+<script>
+  const preferiti = JSON.parse(localStorage.getItem("preferiti")) || [];
 
-    <main class="container my-4">
-        <div class="row" id="listaPreferiti"></div>
-    </main>
+  fetch("recipes.json")
+    .then((res) => res.json())
+    .then((ricette) => {
+      const lista = document.getElementById("listaPreferiti");
 
-    <script>
-        const preferiti = JSON.parse(localStorage.getItem("preferiti")) || [];
+      if (preferiti.length === 0) {
+        lista.innerHTML =
+          '<div class="col-12 text-center"><p class="text-muted">Non hai ancora salvato ricette.</p></div>';
+      } else {
+        ricette
+          .filter((r) => preferiti.includes(r.nome))
+          .forEach((r) => {
+            lista.innerHTML += `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+              <img src="${r.immagine}" class="card-img-top" alt="${r.nome}" />
+              <div class="card-body">
+                <h5 class="card-title">${r.nome}</h5>
+                <p><strong>Tempo:</strong> ${r.tempo} | <strong>Difficoltà:</strong> ${r.difficoltà}</p>
+                <p><strong>Ingredienti:</strong> ${r.ingredienti.join(", ")}</p>
+                <button class="btn btn-danger w-100" onclick="rimuoviPreferito('${r.nome}')">❌ Rimuovi</button>
+              </div>
+            </div>
+          </div>
+          `;
+          });
+      }
+    });
 
-        fetch("recipes.json")
-            .then(response => response.json())
-            .then(ricette => {
-                const lista = document.getElementById('listaPreferiti');
-
-                if (preferiti.length === 0) {
-                    lista.innerHTML = `<div class="col-12 text-center"><p class="text-muted">Non hai ancora salvato ricette.</p></div>`;
-                } else {
-                    ricette.filter(r => preferiti.includes(r.nome)).forEach(r => {
-                        lista.innerHTML += `
-                            <div class="col-md-4 mb-4">
-                                <div class="card shadow-sm">
-                                    <img src="${r.immagine}" class="card-img-top" alt="${r.nome}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${r.nome}</h5>
-                                        <p><strong>Tempo:</strong> ${r.tempo} | <strong>Difficoltà:</strong> ${r.difficoltà}</p>
-                                        <p><strong>Ingredienti:</strong> ${r.ingredienti.join(', ')}</p>
-                                        <button class="btn btn-danger w-100" onclick="rimuoviPreferito('${r.nome}')">❌ Rimuovi</button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-
-        function rimuoviPreferito(nome) {
-            let pref = JSON.parse(localStorage.getItem("preferiti")) || [];
-            pref = pref.filter(item => item !== nome);
-            localStorage.setItem("preferiti", JSON.stringify(pref));
-            location.reload();
-        }
-    </script>
+  function rimuoviPreferito(nome) {
+    let pref = JSON.parse(localStorage.getItem("preferiti")) || [];
+    pref = pref.filter((item) => item !== nome);
+    localStorage.setItem("preferiti", JSON.stringify(pref));
+    location.reload();
+  }
+</script>
 </body>
 </html>
