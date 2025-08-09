@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ricette per Ingredienti</title>
+<title>Ricette per Ingredienti - Autocomplete & Invio</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
   body {
@@ -15,16 +15,21 @@
     padding: 2rem 0;
     text-align: center;
   }
-  .ingredienti {
-    font-size: 0.9rem;
-    color: #555;
+  .autocomplete-suggestions {
+    border: 1px solid #ddd;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: white;
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
   }
-  .card img {
-    height: 180px;
-    object-fit: cover;
+  .autocomplete-suggestion {
+    padding: 6px 10px;
+    cursor: pointer;
   }
-  #dettagliRicetta {
-    margin-top: 2rem;
+  .autocomplete-suggestion:hover {
+    background-color: #ffccbc;
   }
 </style>
 </head>
@@ -34,10 +39,11 @@
   <p>Inserisci gli ingredienti che hai e scopri cosa cucinare</p>
   <a href="preferiti.html" class="btn btn-light mt-2">⭐ Vai ai Preferiti</a>
 </header>
-<main class="container my-4">
+<main class="container my-4" style="position: relative;">
   <div class="row mb-4">
-    <div class="col-md-10">
-      <input type="text" id="ingredienti" class="form-control" placeholder="Es. pasta, tonno, cipolla" />
+    <div class="col-md-10 position-relative">
+      <input type="text" id="ingredienti" class="form-control" placeholder="Es. pasta, tonno, cipolla" autocomplete="off" />
+      <div id="autocomplete-list" class="autocomplete-suggestions"></div>
     </div>
     <div class="col-md-2">
       <button class="btn btn-warning w-100" onclick="cercaRicette()">Trova Ricette</button>
@@ -46,49 +52,98 @@
   <div class="row" id="risultati"></div>
   <div id="dettagliRicetta"></div>
 </main>
+
 <script>
   let ricette = [];
+  let tuttiIngredienti = [];
 
+  // Carica ricette e genera lista unica ingredienti
   fetch("recipes.json")
     .then((res) => res.json())
     .then((data) => {
       ricette = data;
+      // Estrai tutti gli ingredienti unici
+      const ingrSet = new Set();
+      ricette.forEach(r => r.ingredienti.forEach(i => ingrSet.add(i)));
+      tuttiIngredienti = Array.from(ingrSet).sort();
     })
     .catch((err) => console.error("Errore caricamento JSON:", err));
 
-  function cercaRicette() {
-    const input = document
-      .getElementById("ingredienti")
-      .value.toLowerCase()
-      .split(",")
-      .map((i) => i.trim())
-      .filter((i) => i !== "");
+  const input = document.getElementById("ingredienti");
+  const autocompleteList = document.getElementById("autocomplete-list");
 
+  // Funzione per mostrare suggerimenti di ingredienti
+  input.addEventListener("input", function() {
+    const val = this.value.toLowerCase();
+    autocompleteList.innerHTML = "";
+
+    if (!val) return;
+
+    // Prendi l’ultimo ingrediente che sta scrivendo (se scrive più ingredienti separati da virgola)
+    const parti = val.split(",").map(s => s.trim());
+    const ultimo = parti[parti.length - 1];
+
+    if (ultimo.length === 0) return;
+
+    // Filtra ingredienti che iniziano con quello scritto
+    const suggerimenti = tuttiIngredienti.filter(i => i.toLowerCase().startsWith(ultimo)).slice(0, 7);
+
+    suggerimenti.forEach(sug => {
+      const div = document.createElement("div");
+      div.classList.add("autocomplete-suggestion");
+      div.innerText = sug;
+      div.onclick = () => {
+        // Sostituisci l’ultimo ingrediente con il suggerimento scelto
+        parti[parti.length - 1] = sug;
+        input.value = parti.join(", ") + ", ";
+        autocompleteList.innerHTML = "";
+        input.focus();
+      };
+      autocompleteList.appendChild(div);
+    });
+  });
+
+  // Chiudi la lista suggerimenti cliccando fuori
+  document.addEventListener("click", function(e) {
+    if (e.target !== input) {
+      autocompleteList.innerHTML = "";
+    }
+  });
+
+  // Permetti Invio per lanciare la ricerca
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault(); // evita submit o comportamenti strani
+      cercaRicette();
+      autocompleteList.innerHTML = "";
+    }
+  });
+
+  function cercaRicette() {
+    const inputVal = input.value.toLowerCase().split(",").map(i => i.trim()).filter(i => i !== "");
     const risultati = document.getElementById("risultati");
     risultati.innerHTML = "";
     document.getElementById("dettagliRicetta").innerHTML = "";
 
-    if (input.length === 0) {
-      risultati.innerHTML =
-        '<div class="col-12 text-center"><p class="text-muted">Inserisci almeno un ingrediente.</p></div>';
+    if (inputVal.length === 0) {
+      risultati.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Inserisci almeno un ingrediente.</p></div>';
       return;
     }
 
     const filtrate = ricette
-      .map((r) => ({
+      .map(r => ({
         ...r,
-        matchCount: r.ingredienti.filter((ing) => input.includes(ing)).length,
+        matchCount: r.ingredienti.filter(ing => inputVal.includes(ing)).length,
       }))
-      .filter((r) => r.matchCount > 0)
+      .filter(r => r.matchCount > 0)
       .sort((a, b) => b.matchCount - a.matchCount);
 
     if (filtrate.length === 0) {
-      risultati.innerHTML =
-        '<div class="col-12 text-center"><p class="text-muted">Nessuna ricetta trovata.</p></div>';
+      risultati.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nessuna ricetta trovata.</p></div>';
       return;
     }
 
-    filtrate.forEach((r) => {
+    filtrate.forEach(r => {
       risultati.innerHTML += `
       <div class="col-md-4 mb-3">
         <button class="btn btn-outline-primary w-100" onclick="mostraDettagli('${r.nome}')">
@@ -100,7 +155,7 @@
   }
 
   function mostraDettagli(nome) {
-    const ricetta = ricette.find((r) => r.nome === nome);
+    const ricetta = ricette.find(r => r.nome === nome);
     if (!ricetta) return;
 
     document.getElementById("dettagliRicetta").innerHTML = `
